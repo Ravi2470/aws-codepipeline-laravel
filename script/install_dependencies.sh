@@ -4,31 +4,30 @@
 set -o errexit -o pipefail
 
 # Update yum
-sudo apt update -y
+yum update -y
 
 # Install packages
-sudo apt install -y curl
-sudo apt install -y git
+yum install -y curl
+yum install -y git
 
 # Remove current apache & php
-sudo apt -y remove apache2* php*
+yum -y remove httpd* php*
 
 # Install PHP 7.1
-sudo apt install -y php71 php71-cli php71-fpm php71-mysql php71-xml php71-curl php71-opcache php71-pdo php71-gd php71-pecl-apcu php71-mbstring php71-imap php71-pecl-redis php71-mcrypt php71-mysqlnd mod24_ssl
+yum install -y php71 php71-cli php71-fpm php71-mysql php71-xml php71-curl php71-opcache php71-pdo php71-gd php71-pecl-apcu php71-mbstring php71-imap php71-pecl-redis php71-mcrypt php71-mysqlnd mod24_ssl
 
 # Install Apache 2.4
-sudo apt -y install apache2
+yum -y install httpd24
 
 # Allow URL rewrites
-sed -i 's#AllowOverride None#AllowOverride All#' /etc/apache2/apache2.conf
-
+sed -i 's#AllowOverride None#AllowOverride All#' /etc/httpd/conf/httpd.conf
 
 # Change apache document root
 mkdir -p /var/www/html/public
-sed -i 's#DocumentRoot "/var/www/html"#DocumentRoot "/var/www/html/public"#' /etc/apache2/apache2.conf
+sed -i 's#DocumentRoot "/var/www/html"#DocumentRoot "/var/www/html/public"#' /etc/httpd/conf/httpd.conf
 
 # Change apache directory index
-sed -e 's/DirectoryIndex.*/DirectoryIndex index.html index.php/' -i /etc/apache2/apache2.conf
+sed -e 's/DirectoryIndex.*/DirectoryIndex index.html index.php/' -i /etc/httpd/conf/httpd.conf
 
 # Get Composer, and install to /usr/local/bin
 if [ ! -f "/usr/local/bin/composer" ]; then
@@ -40,10 +39,10 @@ else
 fi
 
 # Restart apache
-systemctl start apache2
+service httpd start
 
 # Setup apache to start on boot
-systemctl enable apache2
+chkconfig httpd on
 
 # Ensure aws-cli is installed and configured
 if [ ! -f "/usr/bin/aws" ]; then
